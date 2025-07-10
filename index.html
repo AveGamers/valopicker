@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ValoPicker.com - Valorant Agent Randomizer</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/icon.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Source Code Pro', monospace;
+            background-image: url('images/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 26, 46, 0.85);
+            z-index: -1;
+        }
+        .agent-container.selected .agent-image {
+            outline: 3px solid #ff4655;
+            outline-offset: 3px;
+            transform: scale(1.05);
+            opacity: 1;
+        }
+        .agent-image {
+            opacity: 0.8;
+            transition: all 0.2s ease-in-out;
+        }
+        #preview-box {
+            background-image: url('images/agent-bg.png');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+        #preview-image {
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        /* Agent Name Overlay */
+        .agent-name-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px;
+            font-size: 0.8rem;
+            text-align: center;
+            transition: opacity 0.2s ease-in-out;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        /* Shuffle Animation Styles */
+        #shuffle-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #shuffle-reel {
+            display: flex;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .reel-item {
+            flex-shrink: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .reel-item img {
+             max-width: 90%;
+             max-height: 90%;
+             object-fit: contain;
+        }
+        
+        /* Shuffle Arrows */
+        #shuffle-arrows {
+            pointer-events: none; /* Make sure they don't block clicks */
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes bounce-down {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+        #shuffle-arrows .arrow-up {
+            animation: bounce 1s infinite;
+        }
+        #shuffle-arrows .arrow-down {
+            animation: bounce-down 1s infinite;
+        }
+
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Main Container -->
+    <div id="app-container" class="container mx-auto p-4 max-w-7xl">
+
+        <!-- Header Bar -->
+        <header class="bg-gray-900/50 rounded-lg mb-6 p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="images/icon.png" alt="ValoPicker Logo" class="h-12 w-12">
+                <h1 class="text-2xl font-bold text-white">ValoPicker.com</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6 text-lg">
+                <a href="#" id="home-link" class="text-red-500 font-bold transition-colors" data-translate="nav_agents">Agents</a>
+                <a href="#" class="hover:text-red-500 transition-colors" data-translate="nav_weapons">Weapons</a>
+                <a href="#" class="hover:text-red-500 transition-colors" data-translate="nav_maps">Maps</a>
+            </nav>
+            <div class="flex items-center space-x-6 text-lg">
+                 <a href="#" id="about-link" class="hover:text-red-500 transition-colors" data-translate="nav_about">About</a>
+                 <a href="#" id="impressum-link" class="hover:text-red-500 transition-colors" data-translate="nav_impressum">Impressum</a>
+                 <div id="language-switcher" class="flex space-x-2">
+                     <button data-lang="en" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">EN</button>
+                     <button data-lang="de" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">DE</button>
+                 </div>
+            </div>
+        </header>
+
+        <!-- Main Content: Picker -->
+        <main id="picker-page" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 flex flex-col items-center space-y-6">
+                <div id="preview-box" class="w-full max-w-sm h-96 rounded-lg shadow-lg flex flex-col justify-end p-4 relative">
+                    <!-- Shuffle Animation Container -->
+                    <div id="shuffle-container">
+                        <div id="shuffle-reel"></div>
+                    </div>
+                    <!-- Final Agent Image -->
+                    <img id="preview-image" src="https://placehold.co/300x400/transparent/ffffff?text=?" alt="Agent Vorschau" class="w-full h-full object-contain absolute bottom-0 left-0 right-0 mx-auto">
+                    <!-- Shuffle Indicator Arrows -->
+                    <div id="shuffle-arrows" class="hidden absolute inset-0 flex flex-col justify-between items-center py-4">
+                        <svg class="arrow-up w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                        <svg class="arrow-down w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <!-- Agent Name -->
+                    <h2 id="preview-name" data-translate="preview_default" class="relative text-center text-3xl font-bold text-white mt-4 z-10" style="text-shadow: 2px 2px 4px #000;">Wähle Agenten</h2>
+                </div>
+                <button id="randomize-button" class="w-full max-w-sm bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-4 rounded-lg text-2xl transition-transform transform hover:scale-105" data-translate="randomize_button">
+                    Randomize
+                </button>
+            </div>
+            <div id="agent-selection" class="lg:col-span-2 space-y-6"></div>
+        </main>
+
+        <!-- Other Pages -->
+        <div id="about-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="about_title">About ValoPicker.com</h2><p class="text-lg" data-translate="about_text">Dies ist ein anpassbarer Text...</p></div>
+        <div id="impressum-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="impressum_title">Impressum</h2><p class="text-lg">Max Mustermann...</p></div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const agents = [
+            // Controller
+            { name: 'Astra', role: 'Controller' }, { name: 'Brimstone', role: 'Controller' },
+            { name: 'Omen', role: 'Controller' }, { name: 'Viper', role: 'Controller' },
+            { name: 'Harbor', role: 'Controller' },
+            // Sentinel
+            { name: 'Chamber', role: 'Sentinel' }, { name: 'Cypher', role: 'Sentinel' },
+            { name: 'Killjoy', role: 'Sentinel' }, { name: 'Sage', role: 'Sentinel' },
+            // Initiator
+            { name: 'Breach', role: 'Initiator' }, { name: 'Fade', role: 'Initiator' },
+            { name: 'KAY/O', role: 'Initiator' }, { name: 'Skye', role: 'Initiator' },
+            { name: 'Sova', role: 'Initiator' }, { name: 'Gekko', role: 'Initiator' },
+            // Duelist
+            { name: 'Jett', role: 'Duelist' }, { name: 'Phoenix', role: 'Duelist' },
+            { name: 'Raze', role: 'Duelist' }, { name: 'Reyna', role: 'Duelist' },
+            { name: 'Yoru', role: 'Duelist' }, { name: 'Neon', role: 'Duelist' },
+        ].map(agent => {
+            const safeName = agent.name.toLowerCase().replace('/', '');
+            return {
+                ...agent,
+                selectImg: `images/agents/heads/${safeName}.png`,
+                previewImg: `images/agents/preview/${safeName}.png`,
+            };
+        });
+
+        const translations = {
+            en: { nav_agents: "Agents", nav_weapons: "Weapons", nav_maps: "Maps", nav_about: "About", nav_impressum: "Legal Notice", preview_default: "Select Agents", preview_noselection: "No one selected!", randomize_button: "Randomize", about_title: "About ValoPicker.com", about_text: "This is a customizable text for the about page...", impressum_title: "Legal Notice", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" },
+            de: { nav_agents: "Agenten", nav_weapons: "Waffen", nav_maps: "Karten", nav_about: "Über uns", nav_impressum: "Impressum", preview_default: "Wähle Agenten", preview_noselection: "Niemand gewählt!", randomize_button: "Zufällig", about_title: "Über ValoPicker.com", about_text: "Dies ist ein anpassbarer Text für die 'Über uns'-Seite...", impressum_title: "Impressum", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" }
+        };
+
+        const agentSelectionContainer = document.getElementById('agent-selection');
+        const randomizeButton = document.getElementById('randomize-button');
+        const previewImage = document.getElementById('preview-image');
+        const previewName = document.getElementById('preview-name');
+        const shuffleReel = document.getElementById('shuffle-reel');
+        const shuffleArrows = document.getElementById('shuffle-arrows');
+        
+        const pages = { picker: document.getElementById('picker-page'), about: document.getElementById('about-page'), impressum: document.getElementById('impressum-page') };
+        const navLinks = { home: document.getElementById('home-link'), about: document.getElementById('about-link'), impressum: document.getElementById('impressum-link') };
+        
+        let currentLang = 'en';
+
+        function setCookie(name, value, days) { let expires = ""; if (days) { const date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax"; }
+        function getCookie(name) { const nameEQ = name + "="; const ca = document.cookie.split(';'); for (let i = 0; i < ca.length; i++) { let c = ca[i]; while (c.charAt(0) == ' ') c = c.substring(1, c.length); if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length); } return null; }
+
+        function updateLanguageUI(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-translate]').forEach(el => { const key = el.dataset.translate; if (translations[lang][key]) el.textContent = translations[lang][key]; });
+            document.querySelectorAll('.role-title').forEach(title => { const roleKey = title.dataset.role; if(translations[lang][roleKey]) title.textContent = translations[lang][roleKey]; });
+            document.querySelectorAll('.lang-btn').forEach(btn => { btn.style.opacity = btn.dataset.lang === lang ? '1' : '0.5'; btn.style.fontWeight = btn.dataset.lang === lang ? 'bold' : 'normal'; });
+            setCookie('valopicker_lang', lang, 365);
+        }
+        
+        function saveSelection() {
+            const selected = Array.from(document.querySelectorAll('.agent-container.selected')).map(el => el.dataset.name);
+            setCookie('valopicker_selection', JSON.stringify(selected), 365);
+        }
+
+        function loadSelection() {
+            const saved = getCookie('valopicker_selection');
+            if (saved) {
+                try {
+                    const selectedNames = JSON.parse(saved);
+                    document.querySelectorAll('.agent-container').forEach(el => { if (selectedNames.includes(el.dataset.name)) el.classList.add('selected'); });
+                } catch (e) { console.error("Could not parse saved selection cookie.", e); }
+            }
+        }
+
+        function renderAgents() {
+            agentSelectionContainer.innerHTML = '';
+            const agentGroups = agents.reduce((acc, agent) => { acc[agent.role] = acc[agent.role] || []; acc[agent.role].push(agent); return acc; }, {});
+
+            for (const role in agentGroups) {
+                const groupDiv = document.createElement('div');
+                const title = document.createElement('h3');
+                title.textContent = translations[currentLang][role] || role;
+                title.className = 'role-title text-2xl font-bold mb-4 cursor-pointer hover:text-red-500 transition-colors';
+                title.dataset.role = role;
+                groupDiv.appendChild(title);
+
+                const agentsGrid = document.createElement('div');
+                agentsGrid.className = 'grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-4';
+                agentGroups[role].forEach(agent => {
+                    const container = document.createElement('div');
+                    container.className = 'agent-container cursor-pointer relative';
+                    container.dataset.name = agent.name;
+                    container.dataset.role = agent.role;
+
+                    const agentImg = document.createElement('img');
+                    agentImg.src = agent.selectImg;
+                    agentImg.alt = agent.name;
+                    agentImg.className = 'agent-image w-24 h-24 object-cover rounded-lg';
+                    // Add fallback image
+                    agentImg.onerror = () => { agentImg.src = 'https://placehold.co/100x100/333/fff?text=Error'; };
+
+
+                    const nameOverlay = document.createElement('div');
+                    nameOverlay.className = 'agent-name-overlay';
+                    nameOverlay.textContent = agent.name;
+
+                    container.append(agentImg, nameOverlay);
+                    agentsGrid.appendChild(container);
+                });
+                groupDiv.appendChild(agentsGrid);
+                agentSelectionContainer.appendChild(groupDiv);
+            }
+        }
+
+        function runRandomizeAnimation() {
+            const selectedAgentElements = document.querySelectorAll('.agent-container.selected');
+            if (selectedAgentElements.length === 0) {
+                previewName.textContent = translations[currentLang].preview_noselection;
+                previewImage.src = 'https://placehold.co/300x400/transparent/ffffff?text=!';
+                return;
+            }
+
+            randomizeButton.disabled = true;
+            previewImage.style.opacity = '0';
+            previewName.textContent = '...';
+            shuffleArrows.classList.remove('hidden');
+
+            const selectedAgentsData = Array.from(selectedAgentElements).map(el => agents.find(a => a.name === el.dataset.name));
+            
+            let reelAgents = [];
+            for(let i = 0; i < 50; i++) reelAgents.push(selectedAgentsData[Math.floor(Math.random() * selectedAgentsData.length)]);
+            
+            const finalAgent = selectedAgentsData[Math.floor(Math.random() * selectedAgentsData.length)];
+            reelAgents.splice(45, 1, finalAgent);
+
+            shuffleReel.innerHTML = '';
+            reelAgents.forEach(agent => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'reel-item';
+                const img = document.createElement('img');
+                img.src = agent.previewImg;
+                itemDiv.appendChild(img);
+                shuffleReel.appendChild(itemDiv);
+            });
+            
+            shuffleReel.style.transition = 'none';
+            shuffleReel.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                shuffleReel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+                const reelItemWidth = shuffleReel.querySelector('.reel-item').offsetWidth;
+                const targetPosition = -(45 * reelItemWidth);
+                shuffleReel.style.transform = `translateX(${targetPosition}px)`;
+            }, 50);
+
+            setTimeout(() => {
+                previewImage.src = finalAgent.previewImg;
+                previewImage.alt = `Vorschau von ${finalAgent.name}`;
+                previewImage.style.opacity = '1';
+                previewName.textContent = finalAgent.name;
+                randomizeButton.disabled = false;
+                shuffleArrows.classList.add('hidden');
+            }, 3100);
+        }
+        
+        agentSelectionContainer.addEventListener('click', (e) => {
+            const container = e.target.closest('.agent-container');
+            if (container) {
+                container.classList.toggle('selected');
+                saveSelection();
+            }
+            if (e.target.tagName === 'H3' && e.target.dataset.role) {
+                const role = e.target.dataset.role;
+                const agentsInGroup = agentSelectionContainer.querySelectorAll(`.agent-container[data-role="${role}"]`);
+                const allSelected = Array.from(agentsInGroup).every(agent => agent.classList.contains('selected'));
+                agentsInGroup.forEach(agent => {
+                    if (allSelected) agent.classList.remove('selected');
+                    else agent.classList.add('selected');
+                });
+                saveSelection();
+            }
+        });
+
+        randomizeButton.addEventListener('click', runRandomizeAnimation);
+
+        function showPage(pageId) { Object.values(pages).forEach(page => page.classList.add('hidden')); if (pages[pageId]) pages[pageId].classList.remove('hidden'); }
+        navLinks.home.addEventListener('click', (e) => { e.preventDefault(); showPage('picker'); });
+        navLinks.about.addEventListener('click', (e) => { e.preventDefault(); showPage('about'); });
+        navLinks.impressum.addEventListener('click', (e) => { e.preventDefault(); showPage('impressum'); });
+        
+        document.getElementById('language-switcher').addEventListener('click', (e) => { if (e.target.matches('.lang-btn')) { const lang = e.target.dataset.lang; updateLanguageUI(lang); } });
+
+        function init() {
+            const savedLang = getCookie('valopicker_lang') || 'en';
+            updateLanguageUI(savedLang);
+            renderAgents();
+            loadSelection();
+        }
+
+        init();
+    });
+    </script>
+</body>
+</html>
