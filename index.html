@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ValoPicker.com - Valorant Agent Randomizer</title>
+    <meta name="url" content="https://valopicker.com">
+    <meta name="description" content="Can't decide on what agent to play? Randomize it NOW!"/>
+    <meta name="robots" content="index, nofollow">
+    <link rel="icon" type="image/x-icon" href="/images/icon.png">
+    <meta property="og:title" content="ValoPicker.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://valopicker.com" />
+    <meta property="og:image" content="https://valopicker.com/images/icon.png" />
+    <meta property="og:description" content="Can't decide on what agent to play? Randomize it NOW!" />
+    <meta name="theme-color" content="#0f172a">
+    <!-- Include this to make the og:image larger -->
+    <meta name="twitter:card" content="summary_large_image">
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="images/icon.png">
     
@@ -27,16 +40,27 @@
             background-color: rgba(26, 26, 46, 0.85);
             z-index: -1;
         }
-        .agent-container.selected .agent-image {
-            outline: 3px solid #ff4655;
-            outline-offset: 3px;
+
+        .agent-container {
+            transition: transform 0.2s ease-in-out;
+            position: relative;
+        }
+        .agent-container.selected {
             transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .agent-container .agent-image {
+            opacity: 0.8;
+            border: 3px solid transparent;
+            transition: opacity 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        
+        .agent-container.selected .agent-image {
+            border-color: #ff4655;
             opacity: 1;
         }
-        .agent-image {
-            opacity: 0.8;
-            transition: all 0.2s ease-in-out;
-        }
+
         #preview-box {
             background-image: url('images/agent-bg.png');
             background-size: cover;
@@ -48,7 +72,6 @@
             object-fit: contain;
         }
         
-        /* Agent Name Overlay */
         .agent-name-overlay {
             position: absolute;
             bottom: 0;
@@ -56,15 +79,16 @@
             right: 0;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 4px;
-            font-size: 0.8rem;
+            padding: 2px;
+            font-size: 0.75rem;
             text-align: center;
-            transition: opacity 0.2s ease-in-out;
             border-bottom-left-radius: 0.5rem;
             border-bottom-right-radius: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Shuffle Animation Styles */
         #shuffle-container {
             position: relative;
             width: 100%;
@@ -92,69 +116,98 @@
              object-fit: contain;
         }
         
-        /* Shuffle Arrows */
         #shuffle-arrows {
-            pointer-events: none; /* Make sure they don't block clicks */
+            pointer-events: none;
         }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes bounce-down {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(10px); }
-        }
-        #shuffle-arrows .arrow-up {
-            animation: bounce 1s infinite;
-        }
-        #shuffle-arrows .arrow-down {
-            animation: bounce-down 1s infinite;
-        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes bounce-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+        #shuffle-arrows .arrow-up { animation: bounce 1s infinite; }
+        #shuffle-arrows .arrow-down { animation: bounce-down 1s infinite; }
 
+        /* Glow Effects */
+        .text-glow {
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 70, 85, 0.4);
+        }
+        .logo-glow {
+            filter: drop-shadow(0 0 6px rgba(255, 70, 85, 0.7));
+            transition: filter 0.3s ease-in-out;
+        }
+        .logo-glow:hover {
+            filter: drop-shadow(0 0 10px rgba(255, 70, 85, 1));
+        }
     </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M15CSEDCH5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-M15CSEDCH5');
+    </script>
+
 </head>
 <body class="text-gray-200">
 
-    <!-- Main Container -->
     <div id="app-container" class="container mx-auto p-4 max-w-7xl">
 
         <!-- Header Bar -->
         <header class="bg-gray-900/50 rounded-lg mb-6 p-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <img src="images/icon.png" alt="ValoPicker Logo" class="h-12 w-12">
-                <h1 class="text-2xl font-bold text-white">ValoPicker.com</h1>
+            <!-- Logo and Title -->
+            <div class="flex items-center space-x-4 flex-shrink-0">
+                <img src="images/icon.png" alt="ValoPicker Logo" class="h-12 w-12 logo-glow">
+                <h1 class="text-2xl font-bold text-white text-glow">ValoPicker.com</h1>
             </div>
-            <nav class="hidden md:flex items-center space-x-6 text-lg">
-                <a href="#" id="home-link" class="text-red-500 font-bold transition-colors" data-translate="nav_agents">Agents</a>
-                <a href="#" class="hover:text-red-500 transition-colors" data-translate="nav_weapons">Weapons</a>
-                <a href="#" class="hover:text-red-500 transition-colors" data-translate="nav_maps">Maps</a>
+
+            <!-- Desktop Main Nav (Centered) -->
+            <nav class="hidden md:flex flex-grow justify-center items-center space-x-6 text-lg">
+                <a href="#" class="nav-link" data-page="picker" data-translate="nav_agents">Agents</a>
+                <a href="#" class="nav-link" data-page="weapons" data-translate="nav_weapons">Weapons</a>
+                <a href="#" class="nav-link" data-page="maps" data-translate="nav_maps">Maps</a>
             </nav>
-            <div class="flex items-center space-x-6 text-lg">
-                 <a href="#" id="about-link" class="hover:text-red-500 transition-colors" data-translate="nav_about">About</a>
-                 <a href="#" id="impressum-link" class="hover:text-red-500 transition-colors" data-translate="nav_impressum">Impressum</a>
-                 <div id="language-switcher" class="flex space-x-2">
-                     <button data-lang="en" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">EN</button>
-                     <button data-lang="de" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">DE</button>
-                 </div>
+
+            <!-- Right side: Meta Nav (Desktop) + Hamburger (Mobile) -->
+            <div class="flex items-center space-x-6 text-lg flex-shrink-0">
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="nav-link" data-page="about" data-translate="nav_about">About</a>
+                    <a href="#" class="nav-link" data-page="impressum" data-translate="nav_impressum">Impressum</a>
+                    <div id="language-switcher" class="flex space-x-2">
+                        <button data-lang="en" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">EN</button>
+                        <button data-lang="de" class="lang-btn opacity-50 hover:opacity-100 transition-opacity">DE</button>
+                    </div>
+                </div>
+                <!-- Hamburger Button (Mobile Only) -->
+                <div class="md:hidden">
+                    <button id="hamburger-button" class="text-white p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
             </div>
         </header>
+        
+        <!-- Collapsible Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900/50 rounded-lg p-4 mb-6">
+            <nav class="flex flex-col items-center space-y-4 text-lg">
+                 <a href="#" class="nav-link" data-page="picker" data-translate="nav_agents">Agents</a>
+                 <a href="#" class="nav-link" data-page="weapons" data-translate="nav_weapons">Weapons</a>
+                 <a href="#" class="nav-link" data-page="maps" data-translate="nav_maps">Maps</a>
+                 <a href="#" class="nav-link" data-page="about" data-translate="nav_about">About</a>
+                 <a href="#" class="nav-link" data-page="impressum" data-translate="nav_impressum">Impressum</a>
+            </nav>
+        </div>
+
 
         <!-- Main Content: Picker -->
         <main id="picker-page" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 flex flex-col items-center space-y-6">
                 <div id="preview-box" class="w-full max-w-sm h-96 rounded-lg shadow-lg flex flex-col justify-end p-4 relative">
-                    <!-- Shuffle Animation Container -->
-                    <div id="shuffle-container">
-                        <div id="shuffle-reel"></div>
-                    </div>
-                    <!-- Final Agent Image -->
+                    <div id="shuffle-container"><div id="shuffle-reel"></div></div>
                     <img id="preview-image" src="https://placehold.co/300x400/transparent/ffffff?text=?" alt="Agent Vorschau" class="w-full h-full object-contain absolute bottom-0 left-0 right-0 mx-auto">
-                    <!-- Shuffle Indicator Arrows -->
                     <div id="shuffle-arrows" class="hidden absolute inset-0 flex flex-col justify-between items-center py-4">
-                        <svg class="arrow-up w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                        <svg class="arrow-down w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <svg class="arrow-up w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                        <svg class="arrow-down w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
-                    <!-- Agent Name -->
                     <h2 id="preview-name" data-translate="preview_default" class="relative text-center text-3xl font-bold text-white mt-4 z-10" style="text-shadow: 2px 2px 4px #000;">Wähle Agenten</h2>
                 </div>
                 <button id="randomize-button" class="w-full max-w-sm bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-4 rounded-lg text-2xl transition-transform transform hover:scale-105" data-translate="randomize_button">
@@ -166,39 +219,24 @@
 
         <!-- Other Pages -->
         <div id="about-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="about_title">About ValoPicker.com</h2><p class="text-lg" data-translate="about_text">Dies ist ein anpassbarer Text...</p></div>
-        <div id="impressum-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="impressum_title">Impressum</h2><p class="text-lg">Max Mustermann...</p></div>
+        <div id="impressum-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="impressum_title">Impressum</h2><p class="text-lg">AveGamers<br>C/o RAHFT Management GmbH<br>E-Mail: management@rahft.com <br><br>Schwalbenweg 15<br>15806 Zossen<br>Deutschland/Germany<br><br>Geschäftsführung/CEO: Susanne Wölk<br>Amtsgericht Potsdam - HRB 37870 P<br> USt.IdNr: DE360693074<br><br>Verantwortlicher für den Inhalt iSv. § 18 Abs.2 MStV: AveGamers<br></p></div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const agents = [
-            // Controller
-            { name: 'Astra', role: 'Controller' }, { name: 'Brimstone', role: 'Controller' },
-            { name: 'Omen', role: 'Controller' }, { name: 'Viper', role: 'Controller' },
-            { name: 'Harbor', role: 'Controller' },
-            // Sentinel
-            { name: 'Chamber', role: 'Sentinel' }, { name: 'Cypher', role: 'Sentinel' },
-            { name: 'Killjoy', role: 'Sentinel' }, { name: 'Sage', role: 'Sentinel' },
-            // Initiator
-            { name: 'Breach', role: 'Initiator' }, { name: 'Fade', role: 'Initiator' },
-            { name: 'KAY/O', role: 'Initiator' }, { name: 'Skye', role: 'Initiator' },
-            { name: 'Sova', role: 'Initiator' }, { name: 'Gekko', role: 'Initiator' },
-            // Duelist
-            { name: 'Jett', role: 'Duelist' }, { name: 'Phoenix', role: 'Duelist' },
-            { name: 'Raze', role: 'Duelist' }, { name: 'Reyna', role: 'Duelist' },
-            { name: 'Yoru', role: 'Duelist' }, { name: 'Neon', role: 'Duelist' },
+            { name: 'Astra', role: 'Controller' }, { name: 'Brimstone', role: 'Controller' }, { name: 'Omen', role: 'Controller' }, { name: 'Viper', role: 'Controller' }, { name: 'Harbor', role: 'Controller' }, { name: 'Clove', role: 'Controller' },
+            { name: 'Chamber', role: 'Sentinel' }, { name: 'Cypher', role: 'Sentinel' }, { name: 'Killjoy', role: 'Sentinel' }, { name: 'Sage', role: 'Sentinel' },
+            { name: 'Breach', role: 'Initiator' }, { name: 'Fade', role: 'Initiator' }, { name: 'KAY/O', role: 'Initiator' }, { name: 'Skye', role: 'Initiator' }, { name: 'Sova', role: 'Initiator' }, { name: 'Gekko', role: 'Initiator' },
+            { name: 'Jett', role: 'Duelist' }, { name: 'Phoenix', role: 'Duelist' }, { name: 'Raze', role: 'Duelist' }, { name: 'Reyna', role: 'Duelist' }, { name: 'Yoru', role: 'Duelist' }, { name: 'Neon', role: 'Duelist' }, { name: 'Iso', role: 'Duelist' },
         ].map(agent => {
             const safeName = agent.name.toLowerCase().replace('/', '');
-            return {
-                ...agent,
-                selectImg: `images/agents/heads/${safeName}.png`,
-                previewImg: `images/agents/preview/${safeName}.png`,
-            };
+            return { ...agent, selectImg: `images/agents/heads/${safeName}.webp`, previewImg: `images/agents/preview/${safeName}.webp` };
         });
 
         const translations = {
-            en: { nav_agents: "Agents", nav_weapons: "Weapons", nav_maps: "Maps", nav_about: "About", nav_impressum: "Legal Notice", preview_default: "Select Agents", preview_noselection: "No one selected!", randomize_button: "Randomize", about_title: "About ValoPicker.com", about_text: "This is a customizable text for the about page...", impressum_title: "Legal Notice", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" },
-            de: { nav_agents: "Agenten", nav_weapons: "Waffen", nav_maps: "Karten", nav_about: "Über uns", nav_impressum: "Impressum", preview_default: "Wähle Agenten", preview_noselection: "Niemand gewählt!", randomize_button: "Zufällig", about_title: "Über ValoPicker.com", about_text: "Dies ist ein anpassbarer Text für die 'Über uns'-Seite...", impressum_title: "Impressum", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" }
+            en: { nav_agents: "Agents", nav_weapons: "Weapons", nav_maps: "Maps", nav_about: "About", nav_impressum: "Legal Notice", preview_default: "Select Agents", preview_noselection: "No one selected!", randomize_button: "Randomize", about_title: "About ValoPicker.com", about_text: "ValoPicker.com was created to get some fun back into Valorant <br>Because of the nature of the game, it can get frustrating to grind. We in our friend group found playing random agents a relief. It brought back the fun to<br>playing the game by forcing us to think about new strategies, coming out of our comfort zone and just trying something new. <br><br>Because there was no such service like this one, that was up to date with the game and gave us all the options we wanted, we created this site.<br>If you are interested in how this site works or if you want to support us, take a look at our [Github Repository](https://github.com/AveGamers/valopicker) and<br>buy us a coffee at [Buy me a Coffe](https://buymeacoffee.com/avegamers). <br><br>This Service is provided as part of the IT-WEHGEH.DE group and is maintained by AveGamers, Sylxnc and the Community. <br>We are not partnered or affiliated with RIOT Games or Valorant. <br><br>Grüße aus Deutschland<br>AveGamers<br>", impressum_title: "Legal Notice", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" },
+            de: { nav_agents: "Agenten", nav_weapons: "Waffen", nav_maps: "Karten", nav_about: "Über uns", nav_impressum: "Impressum", preview_default: "Wähle Agenten", preview_noselection: "Niemand gewählt!", randomize_button: "Zufällig", about_title: "Über ValoPicker.com", about_text: "ValoPicker.com was created to get some fun back into Valorant <br>Because of the nature of the game, it can get frustrating to grind. We in our friend group found playing random agents a relief. It brought back the fun to<br>playing the game by forcing us to think about new strategies, coming out of our comfort zone and just trying something new. <br><br>Because there was no such service like this one, that was up to date with the game and gave us all the options we wanted, we created this site.<br>If you are interested in how this site works or if you want to support us, take a look at our [Github Repository](https://github.com/AveGamers/valopicker) and<br>buy us a coffee at [Buy me a Coffe](https://buymeacoffee.com/avegamers). <br><br>This Service is provided as part of the IT-WEHGEH.DE group and is maintained by AveGamers, Sylxnc and the Community. <br>We are not partnered or affiliated with RIOT Games or Valorant. <br><br>Grüße aus Deutschland<br>AveGamers<br>", impressum_title: "Impressum", Controller: "Controller", Sentinel: "Sentinel", Initiator: "Initiator", Duelist: "Duelist" }
         };
 
         const agentSelectionContainer = document.getElementById('agent-selection');
@@ -207,9 +245,10 @@
         const previewName = document.getElementById('preview-name');
         const shuffleReel = document.getElementById('shuffle-reel');
         const shuffleArrows = document.getElementById('shuffle-arrows');
+        const hamburgerButton = document.getElementById('hamburger-button');
+        const mobileMenu = document.getElementById('mobile-menu');
         
         const pages = { picker: document.getElementById('picker-page'), about: document.getElementById('about-page'), impressum: document.getElementById('impressum-page') };
-        const navLinks = { home: document.getElementById('home-link'), about: document.getElementById('about-link'), impressum: document.getElementById('impressum-link') };
         
         let currentLang = 'en';
 
@@ -219,7 +258,13 @@
         function updateLanguageUI(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
-            document.querySelectorAll('[data-translate]').forEach(el => { const key = el.dataset.translate; if (translations[lang][key]) el.textContent = translations[lang][key]; });
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.dataset.translate;
+                if (translations[lang][key]) {
+                    // FIX: Use innerHTML to allow for <br> tags and other HTML in translations
+                    el.innerHTML = translations[lang][key];
+                }
+            });
             document.querySelectorAll('.role-title').forEach(title => { const roleKey = title.dataset.role; if(translations[lang][roleKey]) title.textContent = translations[lang][roleKey]; });
             document.querySelectorAll('.lang-btn').forEach(btn => { btn.style.opacity = btn.dataset.lang === lang ? '1' : '0.5'; btn.style.fontWeight = btn.dataset.lang === lang ? 'bold' : 'normal'; });
             setCookie('valopicker_lang', lang, 365);
@@ -253,25 +298,20 @@
                 groupDiv.appendChild(title);
 
                 const agentsGrid = document.createElement('div');
-                agentsGrid.className = 'grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-4';
+                agentsGrid.className = 'grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 sm:gap-4';
                 agentGroups[role].forEach(agent => {
                     const container = document.createElement('div');
-                    container.className = 'agent-container cursor-pointer relative';
+                    container.className = 'agent-container cursor-pointer relative aspect-square';
                     container.dataset.name = agent.name;
                     container.dataset.role = agent.role;
-
                     const agentImg = document.createElement('img');
                     agentImg.src = agent.selectImg;
                     agentImg.alt = agent.name;
-                    agentImg.className = 'agent-image w-24 h-24 object-cover rounded-lg';
-                    // Add fallback image
+                    agentImg.className = 'agent-image w-full h-full object-cover rounded-lg block';
                     agentImg.onerror = () => { agentImg.src = 'https://placehold.co/100x100/333/fff?text=Error'; };
-
-
                     const nameOverlay = document.createElement('div');
                     nameOverlay.className = 'agent-name-overlay';
                     nameOverlay.textContent = agent.name;
-
                     container.append(agentImg, nameOverlay);
                     agentsGrid.appendChild(container);
                 });
@@ -294,10 +334,8 @@
             shuffleArrows.classList.remove('hidden');
 
             const selectedAgentsData = Array.from(selectedAgentElements).map(el => agents.find(a => a.name === el.dataset.name));
-            
             let reelAgents = [];
             for(let i = 0; i < 50; i++) reelAgents.push(selectedAgentsData[Math.floor(Math.random() * selectedAgentsData.length)]);
-            
             const finalAgent = selectedAgentsData[Math.floor(Math.random() * selectedAgentsData.length)];
             reelAgents.splice(45, 1, finalAgent);
 
@@ -351,18 +389,49 @@
 
         randomizeButton.addEventListener('click', runRandomizeAnimation);
 
-        function showPage(pageId) { Object.values(pages).forEach(page => page.classList.add('hidden')); if (pages[pageId]) pages[pageId].classList.remove('hidden'); }
-        navLinks.home.addEventListener('click', (e) => { e.preventDefault(); showPage('picker'); });
-        navLinks.about.addEventListener('click', (e) => { e.preventDefault(); showPage('about'); });
-        navLinks.impressum.addEventListener('click', (e) => { e.preventDefault(); showPage('impressum'); });
+        function updateActiveNavLink(activePage) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('text-red-500', 'font-bold');
+                link.classList.add('hover:text-red-500');
+                if (link.dataset.page === activePage) {
+                    link.classList.add('text-red-500', 'font-bold');
+                    link.classList.remove('hover:text-red-500');
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            Object.values(pages).forEach(page => page.classList.add('hidden'));
+            if (pages[pageId]) {
+                 pages[pageId].classList.remove('hidden');
+            } else {
+                 // Fallback to picker page if page doesn't exist yet
+                 pages['picker'].classList.remove('hidden');
+                 pageId = 'picker';
+            }
+            updateActiveNavLink(pageId);
+            mobileMenu.classList.add('hidden');
+        }
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage(e.target.dataset.page);
+            });
+        });
         
         document.getElementById('language-switcher').addEventListener('click', (e) => { if (e.target.matches('.lang-btn')) { const lang = e.target.dataset.lang; updateLanguageUI(lang); } });
+
+        hamburgerButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
 
         function init() {
             const savedLang = getCookie('valopicker_lang') || 'en';
             updateLanguageUI(savedLang);
             renderAgents();
             loadSelection();
+            showPage('picker'); // Start on the picker page
         }
 
         init();
