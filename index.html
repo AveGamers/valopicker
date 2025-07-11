@@ -219,16 +219,16 @@
 
         <!-- Other Pages -->
         <div id="about-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="about_title">About ValoPicker.com</h2><p class="text-lg" data-translate="about_text">Dies ist ein anpassbarer Text...</p></div>
-        <div id="impressum-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="impressum_title">Impressum</h2><p class="text-lg">AveGamers<br>C/o RAHFT Management GmbH<br>E-Mail: management@rahft.com <br><br>Schwalbenweg 15<br>15806 Zossen<br>Deutschland/Germany<br><br>Geschäftsführung/CEO: Susanne Wölk<br>Amtsgericht Potsdam - HRB 37870 P<br> USt.IdNr: DE360693074<br><br>Verantwortlicher für den Inhalt iSv. § 18 Abs.2 MStV: AveGamers<br></p></div>
+        <div id="impressum-page" class="hidden p-8 bg-gray-800/70 rounded-lg"><h2 class="text-3xl font-bold mb-4" data-translate="impressum_title">Impressum</h2><p class="text-lg">AveGamers<br>C/o RAHFT Management GmbH<br>E-Mail: management@rahft.com <br><br>Schwalbenweg 15<br>15806 Zossen<br>Deutschland/Germany<br><br>Geschäftsführung/CEO: Susanne Wölk<br>Amtsgericht Potsdam - HRB 37870 P<br> USt.IdNr: DE360693074<br><br>Verantwortlicher für den Inhalt iSv. § 18 Abs.2 MStV: AveGamers<br><br><br>This Website uses Cookies to save your selections.<br>This Website tracks usage anonymously using Google Analytics. Data is collected and pseudomised to respect your privacy. We use this data to track website usage and optimize your experience, without compromising your data. Your IP might be given to an external vendor.<br>This Website siteloads fonts from Google. Your IP might be given to an external vendor.<br>This Website siteloades TailwindCSS. Your IP might be given to an external vendor.<br></p></div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const agents = [
             { name: 'Astra', role: 'Controller' }, { name: 'Brimstone', role: 'Controller' }, { name: 'Omen', role: 'Controller' }, { name: 'Viper', role: 'Controller' }, { name: 'Harbor', role: 'Controller' }, { name: 'Clove', role: 'Controller' },
-            { name: 'Chamber', role: 'Sentinel' }, { name: 'Cypher', role: 'Sentinel' }, { name: 'Killjoy', role: 'Sentinel' }, { name: 'Sage', role: 'Sentinel' },
+            { name: 'Chamber', role: 'Sentinel' }, { name: 'Cypher', role: 'Sentinel' }, { name: 'Killjoy', role: 'Sentinel' }, { name: 'Sage', role: 'Sentinel' }, { name: 'Vyse', role: 'Sentinel' },
             { name: 'Breach', role: 'Initiator' }, { name: 'Fade', role: 'Initiator' }, { name: 'KAY/O', role: 'Initiator' }, { name: 'Skye', role: 'Initiator' }, { name: 'Sova', role: 'Initiator' }, { name: 'Gekko', role: 'Initiator' },
-            { name: 'Jett', role: 'Duelist' }, { name: 'Phoenix', role: 'Duelist' }, { name: 'Raze', role: 'Duelist' }, { name: 'Reyna', role: 'Duelist' }, { name: 'Yoru', role: 'Duelist' }, { name: 'Neon', role: 'Duelist' }, { name: 'Iso', role: 'Duelist' },
+            { name: 'Jett', role: 'Duelist' }, { name: 'Phoenix', role: 'Duelist' }, { name: 'Raze', role: 'Duelist' }, { name: 'Reyna', role: 'Duelist' }, { name: 'Yoru', role: 'Duelist' }, { name: 'Neon', role: 'Duelist' }, { name: 'Iso', role: 'Duelist' }, { name: 'Waylay', role: 'Duelist' },
         ].map(agent => {
             const safeName = agent.name.toLowerCase().replace('/', '');
             return { ...agent, selectImg: `images/agents/heads/${safeName}.webp`, previewImg: `images/agents/preview/${safeName}.webp` };
